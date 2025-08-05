@@ -2,7 +2,7 @@
 
 A comprehensive Python project for predicting stock price movements using machine learning techniques, technical indicators, and historical market data.
 
-## 🎯 Project Overview
+## Project Overview
 
 This project implements a complete machine learning pipeline for stock price prediction, including:
 
@@ -12,7 +12,7 @@ This project implements a complete machine learning pipeline for stock price pre
 - **Evaluation**: Comprehensive model evaluation with time series validation
 - **Visualization**: Interactive analysis through Jupyter notebooks
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Stock_Market/
@@ -30,7 +30,7 @@ Stock_Market/
 └── README.md                     # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Setup Environment
 
@@ -69,7 +69,7 @@ jupyter notebook
 # Open and run: notebooks/stock_prediction_demo.ipynb
 ```
 
-## 🛠️ Features
+## Features
 
 ### Data Collection
 - **Real-time data** from Yahoo Finance API
@@ -96,7 +96,7 @@ jupyter notebook
 - **Cross-validation**: Time series cross-validation
 - **Visualization**: Performance plots and analysis
 
-## 📊 Usage Examples
+## Usage Examples
 
 ### Command Line Interface
 
@@ -138,7 +138,7 @@ metrics = predictor.evaluate_model(X_test, y_test)
 print(f"Accuracy: {metrics['accuracy']:.1%}")
 ```
 
-## 📈 Model Performance
+## Model Performance
 
 Typical results for major stocks (1-day direction prediction):
 
@@ -149,7 +149,7 @@ Typical results for major stocks (1-day direction prediction):
 
 **Note**: Stock prediction is inherently difficult. Results above 55% accuracy for daily direction prediction are considered good.
 
-## 🔧 Configuration
+## Configuration
 
 ### Prediction Targets
 - `direction`: Binary up/down prediction (classification)
@@ -165,7 +165,7 @@ Typical results for major stocks (1-day direction prediction):
 - Medium: `1y`, `2y`, `5y`
 - Long: `10y`, `ytd`, `max`
 
-## 📚 Key Dependencies
+## Key Dependencies
 
 - **yfinance**: Stock data collection
 - **pandas**: Data manipulation
@@ -175,7 +175,7 @@ Typical results for major stocks (1-day direction prediction):
 - **matplotlib/seaborn**: Visualization
 - **jupyter**: Interactive analysis
 
-## ⚠️ Important Disclaimers
+## Important Disclaimers
 
 1. **Not Financial Advice**: This is for educational purposes only
 2. **Past Performance**: Historical data doesn't guarantee future results
@@ -183,7 +183,7 @@ Typical results for major stocks (1-day direction prediction):
 4. **Model Limitations**: No model can consistently predict market movements
 5. **Transaction Costs**: Real trading involves fees and slippage
 
-## 🚧 Future Enhancements
+## Future Enhancements
 
 - [ ] **Deep Learning**: LSTM/GRU networks for sequence modeling
 - [ ] **Alternative Data**: News sentiment, social media, economic indicators
@@ -193,15 +193,15 @@ Typical results for major stocks (1-day direction prediction):
 - [ ] **Backtesting**: Historical strategy performance
 - [ ] **Web Interface**: Interactive dashboard
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
 
-## 📄 License
+## License
 
 This project is for educational purposes. Use at your own risk for any trading decisions.
 
-## 📞 Support
+## Support
 
 For questions or issues:
 1. Check existing issues in the project
@@ -210,4 +210,4 @@ For questions or issues:
 
 ---
 
-**Remember**: Always do your own research and never invest more than you can afford to lose! 📈📉
+**Remember**: Always do your own research and never invest more than you can afford to lose!
