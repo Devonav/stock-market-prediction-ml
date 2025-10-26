@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--target-days', type=int, default=1, help='Days ahead to predict (default: 1)')
     parser.add_argument('--target-type', choices=['direction', 'price_change', 'price'], 
                        default='direction', help='Prediction target type (default: direction)')
-    parser.add_argument('--model', choices=['random_forest', 'logistic_regression', 'linear_regression'], 
+    parser.add_argument('--model', choices=['random_forest', 'xgboost', 'lightgbm', 'logistic_regression', 'linear_regression', 'ensemble'],
                        default='random_forest', help='Model type (default: random_forest)')
     parser.add_argument('--save-model', action='store_true', help='Save the trained model')
     parser.add_argument('--compare', action='store_true', help='Compare multiple models')
@@ -85,16 +85,17 @@ def main():
     if args.compare:
         # Compare multiple models
         print("Comparing multiple models...")
-        results = compare_models(X_train, X_test, y_train, y_test, task_type=task_type)
-        
+        results = compare_models(X_train, X_test, y_train, y_test, task_type=task_type,
+                               feature_columns=predictor.feature_columns, scaler=predictor.scaler)
+
         # Print comparison table
         print(f"\n{'='*60}")
         print("MODEL COMPARISON RESULTS")
         print('='*60)
-        
+
         comparison_df = pd.DataFrame({model: result['metrics'] for model, result in results.items()}).T
         print(comparison_df.round(4))
-        
+
         # Select best model based on primary metric
         if task_type == 'classification':
             best_model_name = comparison_df['accuracy'].idxmax()
@@ -104,7 +105,7 @@ def main():
             best_model_name = comparison_df['r2'].idxmax()
             best_score = comparison_df.loc[best_model_name, 'r2']
             print(f"\nBEST MODEL: {best_model_name} (R²: {best_score:.4f})")
-        
+
         best_model = results[best_model_name]['model']
         
     else:

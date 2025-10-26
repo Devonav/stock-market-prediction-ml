@@ -2,11 +2,13 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split, TimeSeriesSplit, cross_val_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, VotingClassifier, VotingRegressor
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.svm import SVC, SVR
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import xgboost as xgb
+import lightgbm as lgb
 import joblib
 import os
 
@@ -73,15 +75,15 @@ class StockPredictor:
     def train_model(self, X_train, y_train, model_type='random_forest', task_type='classification'):
         """
         Train a machine learning model
-        
+
         Args:
             X_train: Training features
             y_train: Training targets
-            model_type (str): Type of model ('random_forest', 'logistic_regression', 'svm', 'linear_regression')
+            model_type (str): Type of model ('random_forest', 'logistic_regression', 'svm', 'linear_regression', 'xgboost', 'lightgbm', 'ensemble')
             task_type (str): 'classification' or 'regression'
         """
         self.is_classifier = (task_type == 'classification')
-        
+
         if task_type == 'classification':
             if model_type == 'random_forest':
                 self.model = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
@@ -89,9 +91,36 @@ class StockPredictor:
                 self.model = LogisticRegression(random_state=42, max_iter=1000)
             elif model_type == 'svm':
                 self.model = SVC(random_state=42, probability=True)
+            elif model_type == 'xgboost':
+                self.model = xgb.XGBClassifier(
+                    n_estimators=100,
+                    learning_rate=0.1,
+                    max_depth=5,
+                    random_state=42,
+                    n_jobs=-1,
+                    eval_metric='logloss'
+                )
+            elif model_type == 'lightgbm':
+                self.model = lgb.LGBMClassifier(
+                    n_estimators=100,
+                    learning_rate=0.1,
+                    max_depth=5,
+                    random_state=42,
+                    n_jobs=-1,
+                    verbose=-1
+                )
+            elif model_type == 'ensemble':
+                # Create ensemble of best models
+                rf = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
+                xgb_model = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42, n_jobs=-1, eval_metric='logloss')
+                lgb_model = lgb.LGBMClassifier(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42, n_jobs=-1, verbose=-1)
+                self.model = VotingClassifier(
+                    estimators=[('rf', rf), ('xgb', xgb_model), ('lgb', lgb_model)],
+                    voting='soft'
+                )
             else:
                 raise ValueError(f"Unknown classification model: {model_type}")
-        
+
         else:  # regression
             if model_type == 'random_forest':
                 self.model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
@@ -99,9 +128,34 @@ class StockPredictor:
                 self.model = LinearRegression()
             elif model_type == 'svm':
                 self.model = SVR()
+            elif model_type == 'xgboost':
+                self.model = xgb.XGBRegressor(
+                    n_estimators=100,
+                    learning_rate=0.1,
+                    max_depth=5,
+                    random_state=42,
+                    n_jobs=-1
+                )
+            elif model_type == 'lightgbm':
+                self.model = lgb.LGBMRegressor(
+                    n_estimators=100,
+                    learning_rate=0.1,
+                    max_depth=5,
+                    random_state=42,
+                    n_jobs=-1,
+                    verbose=-1
+                )
+            elif model_type == 'ensemble':
+                # Create ensemble of best models
+                rf = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+                xgb_model = xgb.XGBRegressor(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42, n_jobs=-1)
+                lgb_model = lgb.LGBMRegressor(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42, n_jobs=-1, verbose=-1)
+                self.model = VotingRegressor(
+                    estimators=[('rf', rf), ('xgb', xgb_model), ('lgb', lgb_model)]
+                )
             else:
                 raise ValueError(f"Unknown regression model: {model_type}")
-        
+
         print(f"Training {model_type} model for {task_type}...")
         self.model.fit(X_train, y_train)
         print("Model training completed!")
@@ -167,22 +221,43 @@ class StockPredictor:
     def get_feature_importance(self, top_n=20):
         """
         Get feature importance for tree-based models
-        
+
         Args:
             top_n (int): Number of top features to return
-        
+
         Returns:
             pandas.DataFrame: Feature importance
         """
-        if self.model is None or not hasattr(self.model, 'feature_importances_'):
+        if self.model is None:
             return None
-        
-        importance_df = pd.DataFrame({
-            'feature': self.feature_columns,
-            'importance': self.model.feature_importances_
-        }).sort_values('importance', ascending=False)
-        
-        return importance_df.head(top_n)
+
+        # Handle ensemble models
+        if isinstance(self.model, (VotingClassifier, VotingRegressor)):
+            # Average importance across ensemble models
+            importances = []
+            # Use named_estimators_ which is a dictionary
+            for name, estimator in self.model.named_estimators_.items():
+                if hasattr(estimator, 'feature_importances_'):
+                    importances.append(estimator.feature_importances_)
+
+            if importances:
+                avg_importance = np.mean(importances, axis=0)
+                importance_df = pd.DataFrame({
+                    'feature': self.feature_columns,
+                    'importance': avg_importance
+                }).sort_values('importance', ascending=False)
+                return importance_df.head(top_n)
+            return None
+
+        # Handle single models with feature importance
+        elif hasattr(self.model, 'feature_importances_'):
+            importance_df = pd.DataFrame({
+                'feature': self.feature_columns,
+                'importance': self.model.feature_importances_
+            }).sort_values('importance', ascending=False)
+            return importance_df.head(top_n)
+
+        return None
     
     def save_model(self, filename):
         """Save the trained model and scaler"""
@@ -229,46 +304,57 @@ class StockPredictor:
         X_scaled = self.scaler.transform(X[self.feature_columns])
         return self.model.predict_proba(X_scaled)
 
-def compare_models(X_train, X_test, y_train, y_test, task_type='classification'):
+def compare_models(X_train, X_test, y_train, y_test, task_type='classification', feature_columns=None, scaler=None):
     """
     Compare multiple models and return results
-    
+
     Args:
         X_train, X_test, y_train, y_test: Train/test data
         task_type (str): 'classification' or 'regression'
-    
+        feature_columns (list): List of feature column names
+        scaler: Fitted StandardScaler instance
+
     Returns:
         dict: Results for each model
     """
     if task_type == 'classification':
-        models = ['random_forest', 'logistic_regression']
+        models = ['random_forest', 'xgboost', 'lightgbm', 'logistic_regression', 'ensemble']
     else:
-        models = ['random_forest', 'linear_regression']
-    
+        models = ['random_forest', 'xgboost', 'lightgbm', 'linear_regression', 'ensemble']
+
     results = {}
-    
+
     for model_type in models:
         print(f"\n{'='*50}")
         print(f"Training {model_type}")
         print('='*50)
-        
+
         predictor = StockPredictor()
+
+        # Set feature_columns if provided
+        if feature_columns is not None:
+            predictor.feature_columns = feature_columns
+
+        # Set scaler if provided
+        if scaler is not None:
+            predictor.scaler = scaler
+
         predictor.train_model(X_train, y_train, model_type, task_type)
-        
+
         # Evaluate
         metrics = predictor.evaluate_model(X_test, y_test)
-        
+
         # Get feature importance if available
         feature_importance = predictor.get_feature_importance()
-        
+
         results[model_type] = {
             'metrics': metrics,
             'feature_importance': feature_importance,
             'model': predictor
         }
-        
+
         print(f"Metrics: {metrics}")
-    
+
     return results
 
 if __name__ == "__main__":

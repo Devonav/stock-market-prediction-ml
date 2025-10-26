@@ -67,7 +67,7 @@ class FeatureEngineering:
                 data['ATR'] = ta.volatility.average_true_range(data['High'], data['Low'], data['Close'])
             
             # Volume indicators
-            data['Volume_SMA'] = ta.volume.volume_sma(data['Close'], data['Volume'], window=20)
+            data['Volume_SMA'] = data['Volume'].rolling(window=20).mean()
             data['OBV'] = ta.volume.on_balance_volume(data['Close'], data['Volume'])
             
         except Exception as e:

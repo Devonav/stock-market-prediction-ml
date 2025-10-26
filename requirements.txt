@@ -5,6 +5,13 @@ scikit-learn
 matplotlib
 seaborn
 tensorflow
+keras
 plotly
 ta
 jupyter
+xgboost
+lightgbm
+optuna
+ta-lib
+mplfinance
+streamlit
