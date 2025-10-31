@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Finnhub API Test</title>
+</head>
+<body>
+    <h1>Finnhub API Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            const result = document.getElementById('result');
+            result.textContent = 'Testing...';
+
+            try {
+                const apiKey = 'ct6b6h9r01qnbbfcbvs0ct6b6h9r01qnbbfcbvsg';
+                const symbol = 'AAPL';
+                const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                result.textContent = JSON.stringify(data, null, 2);
+
+                if (data.c && data.c > 0) {
+                    result.textContent += '\n\n✅ API IS WORKING!\nCurrent AAPL Price: $' + data.c;
+                } else if (data.error) {
+                    result.textContent += '\n\n❌ API ERROR: ' + data.error;
+                } else {
+                    result.textContent += '\n\n⚠️ Unexpected response format';
+                }
+            } catch (error) {
+                result.textContent = '❌ FETCH ERROR: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

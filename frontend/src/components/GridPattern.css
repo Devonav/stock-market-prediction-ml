@@ -1,0 +1,24 @@
+.grid-pattern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  color: rgba(148, 163, 184, 0.1);
+}
+
+.grid-square {
+  opacity: 0.3;
+  animation: pulse-grid 4s ease-in-out infinite;
+}
+
+@keyframes pulse-grid {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
