@@ -19,16 +19,15 @@ export const AnimatedInput = ({
       className={`relative ${className}`}
     >
       {label && (
-        <label className="block text-sm font-semibold text-slate-700 mb-2">
+        <label className="block text-sm font-semibold text-slate-300 mb-2">
           {label}
         </label>
       )}
       <div className="relative">
         {Icon && (
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-            <Icon className={`w-5 h-5 transition-colors ${
-              isFocused ? 'text-blue-600' : 'text-slate-400'
-            }`} />
+            <Icon className={`w-5 h-5 transition-colors ${isFocused ? 'text-blue-400' : 'text-slate-400'
+              }`} />
           </div>
         )}
         <motion.input
@@ -38,7 +37,7 @@ export const AnimatedInput = ({
           placeholder={placeholder}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className={`input-field ${Icon ? 'pl-11' : ''}`}
+          className={`glass-input w-full ${Icon ? 'pl-11' : ''}`}
           whileFocus={{ scale: 1.01 }}
         />
       </div>
@@ -60,17 +59,17 @@ export const AnimatedSelect = ({
       className={className}
     >
       {label && (
-        <label className="block text-sm font-semibold text-slate-700 mb-2">
+        <label className="block text-sm font-semibold text-slate-300 mb-2">
           {label}
         </label>
       )}
       <select
         value={value}
         onChange={onChange}
-        className="input-field cursor-pointer"
+        className="glass-input w-full cursor-pointer appearance-none"
       >
         {options.map((option, index) => (
-          <option key={index} value={option.value}>
+          <option key={index} value={option.value} className="bg-slate-800 text-white">
             {option.label}
           </option>
         ))}

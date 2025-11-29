@@ -7,6 +7,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sys
 import os
+import pandas as pd
+import numpy as np
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -16,9 +18,16 @@ from feature_engineering import FeatureEngineering
 from advanced_features import AdvancedFeatureEngineering
 from ml_models import StockPredictor, compare_models
 from backtesting import Backtester
+from sentiment_analyzer import SentimentAnalyzer
+from portfolio_manager import PortfolioManager
+from websocket_server import WebSocketServer
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
+
+# Initialize WebSocket
+ws = WebSocketServer()
+ws.init_app(app)
 
 # Global cache for models
 model_cache = {}
@@ -61,6 +70,24 @@ def get_stock_data():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/sentiment', methods=['GET'])
+def get_sentiment():
+    """
+    Get sentiment analysis for a stock
+    Query params: symbol
+    """
+    try:
+        symbol = request.args.get('symbol', 'AAPL')
+        
+        analyzer = SentimentAnalyzer()
+        result = analyzer.get_sentiment(symbol)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/predict', methods=['POST'])
 def predict():
     """
@@ -91,8 +118,13 @@ def predict():
             return jsonify({"error": f"Could not fetch data for {symbol}"}), 404
 
         # Step 2: Feature engineering
+        # Get sentiment if requested (implicitly used if available)
+        analyzer = SentimentAnalyzer()
+        sentiment_data = analyzer.get_sentiment(symbol)
+        sentiment_score = sentiment_data['score']
+        
         fe = FeatureEngineering()
-        processed_data = fe.prepare_features(stock_data, target_days=target_days, target_type=target_type)
+        processed_data = fe.prepare_features(stock_data, target_days=target_days, target_type=target_type, sentiment_score=sentiment_score)
 
         if use_advanced_features:
             advanced_fe = AdvancedFeatureEngineering()
@@ -160,8 +192,6 @@ def predict():
         return jsonify(result)
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -224,8 +254,6 @@ def compare_all_models():
         })
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -300,8 +328,6 @@ def run_backtest():
         return jsonify(result)
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -347,8 +373,6 @@ def get_stock_data_simple():
         })
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -404,10 +428,92 @@ def get_chart_data():
         })
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/portfolio', methods=['GET'])
+def get_portfolio():
+    """Get current portfolio state"""
+    try:
+        # Get current prices for all holdings
+        pm = PortfolioManager()
+        holdings = pm.get_portfolio_state()['holdings']
+        
+        current_prices = {}
+        
+        # Try to get simulated prices first (faster)
+        simulated_prices = ws.get_latest_prices()
+        
+        if holdings:
+            collector = StockDataCollector()
+            for holding in holdings:
+                symbol = holding['symbol']
+                
+                if symbol in simulated_prices:
+                    current_prices[symbol] = simulated_prices[symbol]
+                else:
+                    # Fallback to fetch latest price if not in simulation
+                    try:
+                        stock_data = collector.fetch_stock_data(symbol, period='1d')
+                        if stock_data is not None and not stock_data.empty:
+                            current_prices[symbol] = float(stock_data['Close'].iloc[-1])
+                    except Exception as e:
+                        print(f"Error fetching price for {symbol}: {e}")
+        
+        return jsonify(pm.get_portfolio_state(current_prices))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/portfolio/trade', methods=['POST'])
+def execute_trade():
+    """Execute a trade"""
+    try:
+        data = request.json
+        symbol = data.get('symbol')
+        action = data.get('action')
+        quantity = int(data.get('quantity', 0))
+        
+        if not symbol or not action or quantity <= 0:
+            return jsonify({"error": "Invalid trade parameters"}), 400
+            
+        # Get current price
+        simulated_prices = ws.get_latest_prices()
+        
+        if symbol in simulated_prices:
+            current_price = simulated_prices[symbol]
+        else:
+            # Fallback to fetch latest price
+            collector = StockDataCollector()
+            stock_data = collector.fetch_stock_data(symbol, period='1d')
+            
+            if stock_data is None or stock_data.empty:
+                return jsonify({"error": "Could not fetch current price"}), 400
+                
+            current_price = float(stock_data['Close'].iloc[-1])
+        
+        pm = PortfolioManager()
+        result = pm.execute_trade(symbol, action, quantity, current_price)
+        
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/portfolio/reset', methods=['POST'])
+def reset_portfolio():
+    """Reset portfolio"""
+    try:
+        pm = PortfolioManager()
+        return jsonify(pm.reset_portfolio())
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Use ws.run instead of app.run to enable SocketIO
+    ws.run(app, debug=True, port=5000)

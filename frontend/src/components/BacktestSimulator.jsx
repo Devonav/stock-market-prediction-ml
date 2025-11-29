@@ -57,21 +57,21 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
       {/* Configuration */}
       <AnimatedCard>
         <div className="flex items-center gap-2 mb-6">
-          <DollarSign className="w-6 h-6 text-green-600" />
-          <h2 className="text-2xl font-bold text-slate-800">
+          <DollarSign className="w-6 h-6 text-emerald-400" />
+          <h2 className="text-2xl font-bold text-slate-100">
             Backtesting Simulator
           </h2>
         </div>
 
         {!predictionData && (
-          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-lg mb-6">
+          <div className="bg-amber-500/20 border-l-4 border-amber-500 p-4 rounded-lg mb-6 backdrop-blur-sm">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5" />
               <div>
-                <p className="font-semibold text-amber-800">
+                <p className="font-semibold text-amber-200">
                   Prediction Required
                 </p>
-                <p className="text-amber-700 text-sm">
+                <p className="text-amber-100 text-sm">
                   Please run a prediction first in the "Predictions" tab before
                   running a backtest.
                 </p>
@@ -82,27 +82,27 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Initial Capital ($)
             </label>
             <input
               type="number"
               value={initialCapital}
               onChange={(e) => setInitialCapital(Number(e.target.value))}
-              className="input-field"
+              className="glass-input w-full"
               step="1000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Stop Loss (%)
             </label>
             <input
               type="number"
               value={stopLoss}
               onChange={(e) => setStopLoss(Number(e.target.value))}
-              className="input-field"
+              className="glass-input w-full"
               step="0.5"
               min="0"
               max="20"
@@ -110,14 +110,14 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-300 mb-2">
               Take Profit (%)
             </label>
             <input
               type="number"
               value={takeProfit}
               onChange={(e) => setTakeProfit(Number(e.target.value))}
-              className="input-field"
+              className="glass-input w-full"
               step="1"
               min="0"
               max="50"
@@ -160,8 +160,8 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
                 backtestResults.total_return_pct > 0
                   ? 'up'
                   : backtestResults.total_return_pct < 0
-                  ? 'down'
-                  : 'neutral'
+                    ? 'down'
+                    : 'neutral'
               }
               delay={0.1}
             />
@@ -189,16 +189,16 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
                 backtestResults.sharpe_ratio > 1
                   ? 'Good'
                   : backtestResults.sharpe_ratio > 0.5
-                  ? 'Moderate'
-                  : 'Poor'
+                    ? 'Moderate'
+                    : 'Poor'
               }
               icon={TrendingUp}
               trend={
                 backtestResults.sharpe_ratio > 1
                   ? 'up'
                   : backtestResults.sharpe_ratio > 0.5
-                  ? 'neutral'
-                  : 'down'
+                    ? 'neutral'
+                    : 'down'
               }
               delay={0.4}
             />
@@ -208,7 +208,7 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
           {backtestResults.portfolio_values &&
             backtestResults.portfolio_values.length > 0 && (
               <AnimatedCard delay={0.5}>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">
+                <h3 className="text-xl font-bold text-white mb-4">
                   Portfolio Value Over Time
                 </h3>
                 <PortfolioChart
@@ -221,29 +221,29 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
           {/* Trade History */}
           {backtestResults.trades && backtestResults.trades.length > 0 && (
             <AnimatedCard delay={0.6}>
-              <h3 className="text-xl font-bold text-slate-800 mb-4">
+              <h3 className="text-xl font-bold text-white mb-4">
                 Trade History
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b-2 border-slate-200">
-                      <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                    <tr className="border-b border-white/10">
+                      <th className="text-left py-3 px-4 font-semibold text-slate-300">
                         Entry Date
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                      <th className="text-left py-3 px-4 font-semibold text-slate-300">
                         Exit Date
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                      <th className="text-left py-3 px-4 font-semibold text-slate-300">
                         Entry Price
                       </th>
-                      <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                      <th className="text-left py-3 px-4 font-semibold text-slate-300">
                         Exit Price
                       </th>
-                      <th className="text-right py-3 px-4 font-semibold text-slate-700">
+                      <th className="text-right py-3 px-4 font-semibold text-slate-300">
                         Profit
                       </th>
-                      <th className="text-right py-3 px-4 font-semibold text-slate-700">
+                      <th className="text-right py-3 px-4 font-semibold text-slate-300">
                         Return
                       </th>
                     </tr>
@@ -255,39 +255,37 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
                       >
-                        <td className="py-3 px-4 text-slate-600">
+                        <td className="py-3 px-4 text-slate-200 font-medium">
                           {new Date(trade.entry_date).toLocaleDateString()}
                         </td>
-                        <td className="py-3 px-4 text-slate-600">
+                        <td className="py-3 px-4 text-slate-200 font-medium">
                           {new Date(trade.exit_date).toLocaleDateString()}
                         </td>
-                        <td className="py-3 px-4 text-slate-800 font-semibold">
+                        <td className="py-3 px-4 text-white font-semibold">
                           ${trade.entry_price.toFixed(2)}
                         </td>
-                        <td className="py-3 px-4 text-slate-800 font-semibold">
+                        <td className="py-3 px-4 text-white font-semibold">
                           ${trade.exit_price.toFixed(2)}
                         </td>
                         <td
-                          className={`py-3 px-4 text-right font-bold ${
-                            trade.profit > 0
-                              ? 'text-green-600'
-                              : trade.profit < 0
-                              ? 'text-red-600'
-                              : 'text-slate-600'
-                          }`}
+                          className={`py-3 px-4 text-right font-bold ${trade.profit > 0
+                            ? 'text-emerald-400'
+                            : trade.profit < 0
+                              ? 'text-red-400'
+                              : 'text-slate-400'
+                            }`}
                         >
                           ${trade.profit.toFixed(2)}
                         </td>
                         <td
-                          className={`py-3 px-4 text-right font-bold ${
-                            trade.return > 0
-                              ? 'text-green-600'
-                              : trade.return < 0
-                              ? 'text-red-600'
-                              : 'text-slate-600'
-                          }`}
+                          className={`py-3 px-4 text-right font-bold ${trade.return > 0
+                            ? 'text-emerald-400'
+                            : trade.return < 0
+                              ? 'text-red-400'
+                              : 'text-slate-400'
+                            }`}
                         >
                           {trade.return.toFixed(2)}%
                         </td>
@@ -305,11 +303,11 @@ const BacktestSimulator = ({ symbol, modelType, targetType, predictionData }) =>
       {!backtestResults && !loading && (
         <AnimatedCard>
           <div className="text-center py-12">
-            <DollarSign className="w-20 h-20 text-green-300 mx-auto mb-4 animate-pulse-slow" />
-            <h3 className="text-2xl font-bold text-slate-700 mb-2">
+            <DollarSign className="w-20 h-20 text-emerald-400 mx-auto mb-4 animate-pulse-slow" />
+            <h3 className="text-2xl font-bold text-slate-100 mb-2">
               Backtest Your Strategy
             </h3>
-            <p className="text-slate-500">
+            <p className="text-slate-400">
               Configure parameters above and click "Run Backtest" to simulate
               trading performance
             </p>
@@ -342,7 +340,7 @@ const PortfolioChart = ({ data, initialCapital }) => {
     type: 'scatter',
     mode: 'lines',
     name: 'Portfolio Value',
-    line: { color: '#3b82f6', width: 3 },
+    line: { color: '#2563eb', width: 3 },
     fill: 'tonexty',
   };
 
@@ -361,26 +359,39 @@ const PortfolioChart = ({ data, initialCapital }) => {
     type: 'scatter',
     mode: 'lines',
     name: 'Drawdown',
-    line: { color: '#ef4444', width: 2 },
+    line: { color: '#dc2626', width: 2 },
     fill: 'tozeroy',
     yaxis: 'y2',
   };
 
   const layout = {
-    title: 'Portfolio Performance',
-    xaxis: { title: 'Date' },
-    yaxis: { title: 'Value ($)', side: 'left' },
+    title: {
+      text: 'Portfolio Performance',
+      font: { color: '#fff' }
+    },
+    xaxis: {
+      title: 'Date',
+      color: '#cbd5e1',
+      gridcolor: 'rgba(255, 255, 255, 0.1)'
+    },
+    yaxis: {
+      title: 'Value ($)',
+      side: 'left',
+      color: '#cbd5e1',
+      gridcolor: 'rgba(255, 255, 255, 0.1)'
+    },
     yaxis2: {
       title: 'Drawdown (%)',
       overlaying: 'y',
       side: 'right',
       showgrid: false,
+      color: '#f87171'
     },
     height: 500,
     hovermode: 'x unified',
-    plot_bgcolor: '#f8fafc',
-    paper_bgcolor: 'white',
-    font: { family: 'system-ui' },
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    font: { family: 'system-ui', color: '#fff' },
   };
 
   const config = {

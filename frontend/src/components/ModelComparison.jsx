@@ -60,10 +60,10 @@ const ModelComparison = ({ symbol, period, targetType }) => {
       <AnimatedCard>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">
+            <h3 className="text-xl font-bold text-white mb-2">
               Compare All Models for {symbol}
             </h3>
-            <p className="text-slate-600">
+            <p className="text-slate-300">
               Train and compare multiple ML models to find the best performer
             </p>
           </div>
@@ -92,18 +92,18 @@ const ModelComparison = ({ symbol, period, targetType }) => {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-lg"
+              className="bg-amber-500/20 border-l-4 border-amber-500 p-6 rounded-lg backdrop-blur-sm"
             >
               <div className="flex items-center gap-3">
-                <Trophy className="w-10 h-10 text-amber-600" />
+                <Trophy className="w-10 h-10 text-amber-400" />
                 <div>
-                  <p className="text-sm font-medium text-slate-600">
+                  <p className="text-sm font-medium text-amber-200">
                     Best Model
                   </p>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-2xl font-bold text-white">
                     {best.model}
                   </p>
-                  <p className="text-lg text-slate-700 mt-1">
+                  <p className="text-lg text-amber-100 mt-1">
                     {targetType === 'direction'
                       ? `Accuracy: ${(best.score * 100).toFixed(2)}%`
                       : `R² Score: ${best.score.toFixed(4)}`}
@@ -115,45 +115,45 @@ const ModelComparison = ({ symbol, period, targetType }) => {
 
           {/* Comparison Table */}
           <AnimatedCard delay={0.2}>
-            <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <BarChart3 className="w-6 h-6 text-blue-600" />
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <BarChart3 className="w-6 h-6 text-blue-400" />
               Model Performance Comparison
             </h3>
 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b-2 border-slate-200">
-                    <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                  <tr className="border-b border-white/10">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-300">
                       Model
                     </th>
                     {targetType === 'direction' ? (
                       <>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           Accuracy
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           Precision
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           Recall
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           F1-Score
                         </th>
                       </>
                     ) : (
                       <>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           R²
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           RMSE
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           MAE
                         </th>
-                        <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                        <th className="text-center py-3 px-4 font-semibold text-slate-300">
                           MSE
                         </th>
                       </>
@@ -168,43 +168,42 @@ const ModelComparison = ({ symbol, period, targetType }) => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                          best.model === model ? 'bg-blue-50' : ''
-                        }`}
+                        className={`border-b border-white/5 hover:bg-white/5 transition-colors ${best.model === model ? 'bg-blue-500/20' : ''
+                          }`}
                       >
-                        <td className="py-3 px-4 font-semibold text-slate-800">
+                        <td className="py-3 px-4 font-semibold text-white">
                           {model}
                           {best.model === model && (
-                            <span className="ml-2 text-amber-600">👑</span>
+                            <span className="ml-2 text-amber-400">👑</span>
                           )}
                         </td>
                         {targetType === 'direction' ? (
                           <>
-                            <td className="py-3 px-4 text-center text-blue-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-blue-400 font-semibold">
                               {(data.metrics.accuracy * 100).toFixed(2)}%
                             </td>
-                            <td className="py-3 px-4 text-center text-green-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-green-400 font-semibold">
                               {(data.metrics.precision * 100).toFixed(2)}%
                             </td>
-                            <td className="py-3 px-4 text-center text-purple-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-teal-400 font-semibold">
                               {(data.metrics.recall * 100).toFixed(2)}%
                             </td>
-                            <td className="py-3 px-4 text-center text-indigo-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-blue-400 font-semibold">
                               {(data.metrics.f1_score * 100).toFixed(2)}%
                             </td>
                           </>
                         ) : (
                           <>
-                            <td className="py-3 px-4 text-center text-blue-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-blue-400 font-semibold">
                               {data.metrics.r2.toFixed(4)}
                             </td>
-                            <td className="py-3 px-4 text-center text-green-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-green-400 font-semibold">
                               {data.metrics.rmse.toFixed(4)}
                             </td>
-                            <td className="py-3 px-4 text-center text-purple-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-teal-400 font-semibold">
                               {data.metrics.mae.toFixed(4)}
                             </td>
-                            <td className="py-3 px-4 text-center text-indigo-600 font-semibold">
+                            <td className="py-3 px-4 text-center text-blue-400 font-semibold">
                               {data.metrics.mse.toFixed(4)}
                             </td>
                           </>
@@ -219,7 +218,7 @@ const ModelComparison = ({ symbol, period, targetType }) => {
 
           {/* Comparison Chart */}
           <AnimatedCard delay={0.4}>
-            <h3 className="text-xl font-bold text-slate-800 mb-4">
+            <h3 className="text-xl font-bold text-white mb-4">
               Visual Comparison
             </h3>
             <ComparisonChart
@@ -234,11 +233,11 @@ const ModelComparison = ({ symbol, period, targetType }) => {
       {!comparisonData && !loading && (
         <AnimatedCard>
           <div className="text-center py-12">
-            <BarChart3 className="w-20 h-20 text-blue-300 mx-auto mb-4 animate-pulse-slow" />
-            <h3 className="text-2xl font-bold text-slate-700 mb-2">
+            <BarChart3 className="w-20 h-20 text-blue-400 mx-auto mb-4 animate-pulse-slow" />
+            <h3 className="text-2xl font-bold text-white mb-2">
               Compare Models
             </h3>
-            <p className="text-slate-500">
+            <p className="text-slate-400">
               Click "Run Comparison" to compare all available models for {symbol}
             </p>
           </div>
@@ -269,17 +268,25 @@ const ComparisonChart = ({ comparison, targetType }) => {
   };
 
   const layout = {
-    title: `Model Comparison - ${
-      targetType === 'direction' ? 'Accuracy' : 'R² Score'
-    }`,
-    xaxis: { title: 'Model' },
+    title: {
+      text: `Model Comparison - ${targetType === 'direction' ? 'Accuracy' : 'R² Score'
+        }`,
+      font: { color: '#fff' }
+    },
+    xaxis: {
+      title: 'Model',
+      color: '#cbd5e1',
+      gridcolor: 'rgba(255, 255, 255, 0.1)'
+    },
     yaxis: {
       title: targetType === 'direction' ? 'Accuracy' : 'R² Score',
+      color: '#cbd5e1',
+      gridcolor: 'rgba(255, 255, 255, 0.1)'
     },
     height: 400,
-    plot_bgcolor: '#f8fafc',
-    paper_bgcolor: 'white',
-    font: { family: 'system-ui' },
+    plot_bgcolor: 'rgba(0,0,0,0)',
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    font: { family: 'system-ui', color: '#fff' },
   };
 
   const config = {

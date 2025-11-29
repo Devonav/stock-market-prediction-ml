@@ -1,0 +1,36 @@
+{
+    "cash": 96653.79992675781,
+    "holdings": {
+        "AAPL": {
+            "quantity": 12,
+            "avg_cost": 278.8500061035156
+        }
+    },
+    "transactions": [
+        {
+            "date": "2025-11-29T02:54:56.794891",
+            "symbol": "AAPL",
+            "action": "buy",
+            "quantity": 1,
+            "price": 278.8500061035156,
+            "total": 278.8500061035156
+        },
+        {
+            "date": "2025-11-29T02:55:41.771947",
+            "symbol": "AAPL",
+            "action": "sell",
+            "quantity": 1,
+            "price": 278.8500061035156,
+            "total": 278.8500061035156
+        },
+        {
+            "date": "2025-11-29T02:55:54.654376",
+            "symbol": "AAPL",
+            "action": "buy",
+            "quantity": 12,
+            "price": 278.8500061035156,
+            "total": 3346.2000732421875
+        }
+    ],
+    "history": []
+}

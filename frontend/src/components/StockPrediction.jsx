@@ -7,7 +7,8 @@ import {
   Target,
   Zap,
   CheckCircle,
-  XCircle
+  XCircle,
+  BarChart
 } from 'lucide-react';
 import { AnimatedCard, MetricCard, PulseCard } from './AnimatedCard';
 import { AnimatedButton } from './AnimatedButton';
@@ -61,16 +62,16 @@ const StockPrediction = ({
         text: isUp ? 'UP' : 'DOWN',
         icon: isUp ? TrendingUp : TrendingDown,
         trend: isUp ? 'up' : 'down',
-        color: isUp ? 'text-green-600' : 'text-red-600',
-        bgColor: isUp ? 'bg-green-100' : 'bg-red-100'
+        color: isUp ? 'text-emerald-400' : 'text-red-400',
+        bgColor: isUp ? 'bg-emerald-500' : 'bg-red-500'
       };
     } else {
       return {
         text: `${latest_prediction.toFixed(2)}%`,
         icon: Activity,
         trend: 'neutral',
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100'
+        color: 'text-blue-400',
+        bgColor: 'bg-blue-500'
       };
     }
   };
@@ -83,10 +84,10 @@ const StockPrediction = ({
       <AnimatedCard>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">
+            <h3 className="text-xl font-bold text-slate-100 mb-2">
               Ready to Analyze {symbol}?
             </h3>
-            <p className="text-slate-600">
+            <p className="text-slate-400">
               Using {modelType} model to predict {targetType} for the next trading day
             </p>
           </div>
@@ -105,9 +106,9 @@ const StockPrediction = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg"
+          className="bg-red-500/20 border-l-4 border-red-500 p-4 rounded-lg backdrop-blur-sm"
         >
-          <p className="text-red-700 font-semibold">Error: {error}</p>
+          <p className="text-red-200 font-semibold">Error: {error}</p>
         </motion.div>
       )}
 
@@ -153,11 +154,11 @@ const StockPrediction = ({
               <PulseCard>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600 mb-2">
+                    <p className="text-sm font-medium text-slate-400 mb-2">
                       Next Day Prediction
                     </p>
                     <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-lg ${prediction.bgColor}`}>
+                      <div className={`p-3 rounded-lg ${prediction.bgColor} bg-opacity-20`}>
                         <prediction.icon className={`w-8 h-8 ${prediction.color}`} />
                       </div>
                       <p className={`text-4xl font-bold ${prediction.color}`}>
@@ -194,61 +195,61 @@ const StockPrediction = ({
 
           {/* Model Performance Details */}
           <AnimatedCard delay={0.4}>
-            <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-              <BarChart className="w-6 h-6 text-blue-600" />
+            <h3 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
+              <BarChart className="w-6 h-6 text-blue-400" />
               Model Performance Metrics
             </h3>
 
             {targetType === 'direction' ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">Accuracy</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">Accuracy</p>
+                  <p className="text-2xl font-bold text-blue-400">
                     {(predictionData.metrics.accuracy * 100).toFixed(2)}%
                   </p>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">Precision</p>
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">Precision</p>
+                  <p className="text-2xl font-bold text-emerald-400">
                     {(predictionData.metrics.precision * 100).toFixed(2)}%
                   </p>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">Recall</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">Recall</p>
+                  <p className="text-2xl font-bold text-teal-400">
                     {(predictionData.metrics.recall * 100).toFixed(2)}%
                   </p>
                 </div>
-                <div className="text-center p-4 bg-indigo-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">F1-Score</p>
-                  <p className="text-2xl font-bold text-indigo-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">F1-Score</p>
+                  <p className="text-2xl font-bold text-indigo-400">
                     {(predictionData.metrics.f1_score * 100).toFixed(2)}%
                   </p>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">R² Score</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">R² Score</p>
+                  <p className="text-2xl font-bold text-blue-400">
                     {predictionData.metrics.r2.toFixed(4)}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">RMSE</p>
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">RMSE</p>
+                  <p className="text-2xl font-bold text-emerald-400">
                     {predictionData.metrics.rmse.toFixed(4)}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">MAE</p>
-                  <p className="text-2xl font-bold text-purple-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">MAE</p>
+                  <p className="text-2xl font-bold text-teal-400">
                     {predictionData.metrics.mae.toFixed(4)}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-indigo-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">MSE</p>
-                  <p className="text-2xl font-bold text-indigo-600">
+                <div className="text-center p-4 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-sm text-slate-400 mb-1">MSE</p>
+                  <p className="text-2xl font-bold text-indigo-400">
                     {predictionData.metrics.mse.toFixed(4)}
                   </p>
                 </div>
@@ -258,27 +259,27 @@ const StockPrediction = ({
 
           {/* Recent Predictions Table */}
           <AnimatedCard delay={0.5}>
-            <h3 className="text-xl font-bold text-slate-800 mb-4">
+            <h3 className="text-xl font-bold text-slate-100 mb-4">
               Recent Predictions (Last 20 Days)
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b-2 border-slate-200">
-                    <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                  <tr className="border-b border-white/10">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-300">
                       Date
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-300">
                       Close Price
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-300">
                       Actual
                     </th>
-                    <th className="text-left py-3 px-4 font-semibold text-slate-700">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-300">
                       Predicted
                     </th>
                     {targetType === 'direction' && (
-                      <th className="text-center py-3 px-4 font-semibold text-slate-700">
+                      <th className="text-center py-3 px-4 font-semibold text-slate-300">
                         Result
                       </th>
                     )}
@@ -294,22 +295,21 @@ const StockPrediction = ({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
                       >
-                        <td className="py-3 px-4 text-slate-600">
+                        <td className="py-3 px-4 text-slate-200 font-medium">
                           {new Date(row.date).toLocaleDateString()}
                         </td>
-                        <td className="py-3 px-4 font-semibold text-slate-800">
+                        <td className="py-3 px-4 font-semibold text-slate-100">
                           ${row.close.toFixed(2)}
                         </td>
                         <td className="py-3 px-4">
                           {targetType === 'direction' ? (
                             <span
-                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
-                                row.actual === 1
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-red-100 text-red-700'
-                              }`}
+                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${row.actual === 1
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'bg-red-500/20 text-red-400'
+                                }`}
                             >
                               {row.actual === 1 ? (
                                 <>
@@ -322,7 +322,7 @@ const StockPrediction = ({
                               )}
                             </span>
                           ) : (
-                            <span className="text-slate-700">
+                            <span className="text-slate-300">
                               {row.actual.toFixed(2)}%
                             </span>
                           )}
@@ -330,11 +330,10 @@ const StockPrediction = ({
                         <td className="py-3 px-4">
                           {targetType === 'direction' ? (
                             <span
-                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
-                                row.predicted === 1
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-red-100 text-red-700'
-                              }`}
+                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${row.predicted === 1
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'bg-red-500/20 text-red-400'
+                                }`}
                             >
                               {row.predicted === 1 ? (
                                 <>
@@ -347,7 +346,7 @@ const StockPrediction = ({
                               )}
                             </span>
                           ) : (
-                            <span className="text-slate-700">
+                            <span className="text-slate-300">
                               {row.predicted.toFixed(2)}%
                             </span>
                           )}
@@ -355,9 +354,9 @@ const StockPrediction = ({
                         {targetType === 'direction' && (
                           <td className="py-3 px-4 text-center">
                             {isCorrect ? (
-                              <CheckCircle className="w-5 h-5 text-green-600 mx-auto" />
+                              <CheckCircle className="w-5 h-5 text-emerald-500 mx-auto" />
                             ) : (
-                              <XCircle className="w-5 h-5 text-red-600 mx-auto" />
+                              <XCircle className="w-5 h-5 text-red-500 mx-auto" />
                             )}
                           </td>
                         )}
@@ -385,11 +384,11 @@ const StockPrediction = ({
       {!predictionData && !loading && (
         <AnimatedCard>
           <div className="text-center py-12">
-            <Activity className="w-20 h-20 text-blue-300 mx-auto mb-4 animate-pulse-slow" />
-            <h3 className="text-2xl font-bold text-slate-700 mb-2">
+            <Activity className="w-20 h-20 text-blue-400 mx-auto mb-4 animate-pulse-slow" />
+            <h3 className="text-2xl font-bold text-slate-100 mb-2">
               Ready to Predict
             </h3>
-            <p className="text-slate-500">
+            <p className="text-slate-400">
               Click "Run Analysis" to start predicting {symbol} stock movement
             </p>
           </div>
@@ -398,11 +397,5 @@ const StockPrediction = ({
     </div>
   );
 };
-
-const BarChart = ({ className }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-  </svg>
-);
 
 export default StockPrediction;

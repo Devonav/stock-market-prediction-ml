@@ -6,7 +6,8 @@ import {
   Settings,
   Activity,
   DollarSign,
-  Target
+  Target,
+  Share2
 } from 'lucide-react';
 import { AnimatedCard, MetricCard } from './AnimatedCard';
 import { AnimatedButton } from './AnimatedButton';
@@ -14,9 +15,12 @@ import { AnimatedInput, AnimatedSelect } from './AnimatedInput';
 import StockPrediction from './StockPrediction';
 import ModelComparison from './ModelComparison';
 import BacktestSimulator from './BacktestSimulator';
+import SentimentDashboard from './SentimentDashboard';
+import PortfolioDashboard from './PortfolioDashboard';
 import Marquee from './Marquee';
 import Dock from './Dock';
 import { stockTickerService, DEFAULT_TICKER_SYMBOLS } from '../services/stockTicker';
+import { stockAPI, socket } from '../services/api';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('predictions');
@@ -26,13 +30,17 @@ const Dashboard = () => {
   const [targetType, setTargetType] = useState('direction');
   const [loading, setLoading] = useState(false);
   const [predictionData, setPredictionData] = useState(null);
+  const [sentimentData, setSentimentData] = useState(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
   const [tickerData, setTickerData] = useState([]);
   const [tickerLoading, setTickerLoading] = useState(true);
 
   const tabs = [
     { id: 'predictions', label: 'Predictions', icon: TrendingUp },
+    { id: 'sentiment', label: 'Sentiment', icon: Share2 },
     { id: 'comparison', label: 'Model Comparison', icon: BarChart3 },
     { id: 'backtest', label: 'Backtesting', icon: DollarSign },
+    { id: 'portfolio', label: 'Portfolio', icon: Target },
   ];
 
   const popularStocks = [
@@ -106,12 +114,52 @@ const Dashboard = () => {
     }
   };
 
-  // Initial fetch and auto-refresh every 30 seconds
+  // Initial fetch and real-time updates
   useEffect(() => {
     fetchTickerData();
-    const interval = setInterval(fetchTickerData, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
+
+    // Listen for real-time updates
+    socket.on('price_update', (data) => {
+      setTickerData(prevData => {
+        return prevData.map(item => {
+          if (item.symbol === data.symbol) {
+            const isPositive = data.change >= 0;
+            return {
+              ...item,
+              price: data.price.toFixed(2),
+              percentChange: data.change_pct.toFixed(2),
+              arrow: isPositive ? '↑' : '↓',
+              colorClass: isPositive ? 'text-emerald-400' : 'text-red-400',
+              isPositive
+            };
+          }
+          return item;
+        });
+      });
+    });
+
+    return () => {
+      socket.off('price_update');
+    };
   }, []);
+
+  // Fetch sentiment when tab is active
+  useEffect(() => {
+    if (activeTab === 'sentiment' && symbol) {
+      const fetchSentiment = async () => {
+        setSentimentLoading(true);
+        try {
+          const data = await stockAPI.getSentiment(symbol);
+          setSentimentData(data);
+        } catch (error) {
+          console.error("Error fetching sentiment:", error);
+        } finally {
+          setSentimentLoading(false);
+        }
+      };
+      fetchSentiment();
+    }
+  }, [activeTab, symbol]);
 
   const dockItems = tabs.map(tab => ({
     icon: <tab.icon className="w-6 h-6" />,
@@ -126,18 +174,18 @@ const Dashboard = () => {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-4 bg-slate-900 text-white py-3 px-4 rounded-lg shadow-lg"
+        className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10"
       >
         {tickerLoading ? (
-          <div className="text-center text-slate-400 text-sm py-1">
+          <div className="text-center text-slate-400 text-sm py-2">
             Loading live market data...
           </div>
         ) : tickerData.length > 0 ? (
           <Marquee speed={30} pauseOnHover={true}>
-            <div className="flex gap-8 items-center text-sm font-semibold">
+            <div className="flex gap-8 items-center text-sm font-semibold py-2">
               {tickerData.map((stock, index) => (
                 <span key={index} className="flex items-center gap-2">
-                  <span className="text-slate-400">{stock.symbol}</span>
+                  <span className="text-white">{stock.symbol}</span>
                   <span className={stock.colorClass}>${stock.price}</span>
                   <span className={`${stock.colorClass} text-xs`}>
                     {stock.arrow} {stock.percentChange}%
@@ -147,115 +195,145 @@ const Dashboard = () => {
             </div>
           </Marquee>
         ) : (
-          <div className="text-center text-slate-400 text-sm py-1">
+          <div className="text-center text-slate-400 text-sm py-2">
             Market data unavailable
           </div>
         )}
       </motion.div>
 
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-5xl font-bold text-slate-900 mb-2">
-              Stock Market Prediction AI
-            </h1>
-            <p className="text-slate-600 text-lg">
-              Powered by Machine Learning & Deep Learning
-            </p>
+      <div className="max-w-7xl mx-auto mt-20 space-y-8">
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center space-y-4 py-8"
+        >
+          <h1 className="text-6xl font-bold tracking-tight">
+            <span className="text-gradient">Stock</span>
+            <span className="text-white">Predict</span>
+          </h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
+            Advanced market analysis powered by machine learning and sentiment analysis
+          </p>
+        </motion.header>
+
+        {/* Configuration Panel */}
+        <AnimatedCard delay={0.1} className="glass-panel">
+          <div className="flex items-center gap-2 mb-6">
+            <Settings className="w-6 h-6 text-blue-400" />
+            <h2 className="text-2xl font-bold text-slate-100">Configuration</h2>
           </div>
-          <div className="animate-float">
-            <Activity className="w-16 h-16 text-blue-600" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Stock Symbol</label>
+              <div className="relative">
+                <Target className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <input
+                  type="text"
+                  value={symbol}
+                  onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                  className="glass-input w-full pl-10"
+                  placeholder="e.g., AAPL"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Time Period</label>
+              <div className="relative">
+                <Activity className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                  className="glass-input w-full pl-10 appearance-none cursor-pointer"
+                >
+                  {periods.map(p => (
+                    <option key={p.value} value={p.value} className="bg-slate-800">{p.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Model Type</label>
+              <div className="relative">
+                <BarChart3 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <select
+                  value={modelType}
+                  onChange={(e) => setModelType(e.target.value)}
+                  className="glass-input w-full pl-10 appearance-none cursor-pointer"
+                >
+                  {models.map(m => (
+                    <option key={m.value} value={m.value} className="bg-slate-800">{m.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Prediction Target</label>
+              <div className="relative">
+                <TrendingUp className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                <select
+                  value={targetType}
+                  onChange={(e) => setTargetType(e.target.value)}
+                  className="glass-input w-full pl-10 appearance-none cursor-pointer"
+                >
+                  {targets.map(t => (
+                    <option key={t.value} value={t.value} className="bg-slate-800">{t.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
+        </AnimatedCard>
+
+        {/* Tab Content */}
+        <div className="min-h-[600px]">
+          {activeTab === 'predictions' && (
+            <StockPrediction
+              symbol={symbol}
+              period={period}
+              modelType={modelType}
+              targetType={targetType}
+              predictionData={predictionData}
+              setPredictionData={setPredictionData}
+            />
+          )}
+
+          {activeTab === 'sentiment' && (
+            <SentimentDashboard
+              sentimentData={sentimentData}
+              loading={sentimentLoading}
+            />
+          )}
+
+          {activeTab === 'comparison' && (
+            <ModelComparison
+              symbol={symbol}
+              period={period}
+              targetType={targetType}
+            />
+          )}
+
+          {activeTab === 'backtest' && (
+            <BacktestSimulator
+              symbol={symbol}
+              modelType={modelType}
+              targetType={targetType}
+              predictionData={predictionData}
+            />
+          )}
+
+          {activeTab === 'portfolio' && (
+            <PortfolioDashboard />
+          )}
         </div>
-      </motion.div>
-
-      {/* Configuration Panel */}
-      <AnimatedCard delay={0.1} className="mb-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Settings className="w-6 h-6 text-blue-600" />
-          <h2 className="text-2xl font-bold text-slate-800">Configuration</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <AnimatedInput
-            label="Stock Symbol"
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-            placeholder="AAPL"
-            icon={Target}
-          />
-
-          <AnimatedSelect
-            label="Quick Select"
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value)}
-            options={popularStocks}
-          />
-
-          <AnimatedSelect
-            label="Time Period"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            options={periods}
-          />
-
-          <AnimatedSelect
-            label="Model Type"
-            value={modelType}
-            onChange={(e) => setModelType(e.target.value)}
-            options={models}
-          />
-        </div>
-
-        <div className="mt-6 flex items-center gap-4">
-          <AnimatedSelect
-            label="Prediction Type"
-            value={targetType}
-            onChange={(e) => setTargetType(e.target.value)}
-            options={targets}
-            className="flex-1"
-          />
-        </div>
-      </AnimatedCard>
+      </div>
 
       {/* Dock Navigation */}
-      <Dock items={dockItems} magnification={80} distance={150} />
-
-      {/* Tab Content */}
-      <div className="animate-fade-in">
-        {activeTab === 'predictions' && (
-          <StockPrediction
-            symbol={symbol}
-            period={period}
-            modelType={modelType}
-            targetType={targetType}
-            predictionData={predictionData}
-            setPredictionData={setPredictionData}
-          />
-        )}
-
-        {activeTab === 'comparison' && (
-          <ModelComparison
-            symbol={symbol}
-            period={period}
-            targetType={targetType}
-          />
-        )}
-
-        {activeTab === 'backtest' && (
-          <BacktestSimulator
-            symbol={symbol}
-            modelType={modelType}
-            targetType={targetType}
-            predictionData={predictionData}
-          />
-        )}
-      </div>
+      <Dock items={dockItems} />
 
       {/* Footer */}
       <motion.div

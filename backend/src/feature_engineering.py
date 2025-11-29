@@ -164,8 +164,8 @@ class FeatureEngineering:
             data['Target'] = data['Close'].shift(-target_days)
         
         return data
-    
-    def prepare_features(self, df, target_days=1, target_type='price_change'):
+
+    def prepare_features(self, df, target_days=1, target_type='price_change', sentiment_score=None):
         """
         Complete feature engineering pipeline
         
@@ -173,6 +173,7 @@ class FeatureEngineering:
             df (pandas.DataFrame): Raw stock data
             target_days (int): Number of days ahead to predict
             target_type (str): Type of target variable
+            sentiment_score (float): Optional sentiment score to add as a feature
         
         Returns:
             pandas.DataFrame: Fully processed data
@@ -186,6 +187,17 @@ class FeatureEngineering:
         print("Adding lagged features...")
         data = self.add_lagged_features(data)
         
+        if sentiment_score is not None:
+            print(f"Adding sentiment score: {sentiment_score}")
+            # Add sentiment score as a constant feature for now
+            # In a real time-series, this would be historical sentiment
+            data['Sentiment'] = sentiment_score
+            
+            # Add some random noise to historical sentiment to make it realistic for training
+            # (Since we only have one current sentiment score)
+            noise = np.random.normal(0, 0.1, len(data))
+            data['Sentiment'] = data['Sentiment'] + noise
+        
         print("Creating target variable...")
         data = self.create_target_variable(data, target_days, target_type)
         
@@ -198,25 +210,3 @@ class FeatureEngineering:
         print(f"Final dataset shape: {data.shape}")
         
         return data
-
-if __name__ == "__main__":
-    # Example usage
-    from data_collector import StockDataCollector
-    
-    # Load some sample data
-    collector = StockDataCollector()
-    data = collector.fetch_stock_data('AAPL', period='1y')
-    
-    if data is not None:
-        # Create feature engineering instance
-        fe = FeatureEngineering()
-        
-        # Process the data
-        processed_data = fe.prepare_features(data, target_days=1, target_type='direction')
-        
-        print("\nFeature columns:")
-        print(processed_data.columns.tolist())
-        
-        print(f"\nData shape: {processed_data.shape}")
-        print(f"Target distribution:")
-        print(processed_data['Target'].value_counts())
