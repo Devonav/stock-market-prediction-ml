@@ -54,6 +54,9 @@ const Dashboard = () => {
   ];
 
   const periods = [
+    { value: '5d', label: '1 Week' },
+    { value: '1mo', label: '1 Month' },
+    { value: '3mo', label: '3 Months' },
     { value: '6mo', label: '6 Months' },
     { value: '1y', label: '1 Year' },
     { value: '2y', label: '2 Years' },
@@ -66,6 +69,7 @@ const Dashboard = () => {
     { value: 'lightgbm', label: 'LightGBM (Fast)' },
     { value: 'random_forest', label: 'Random Forest' },
     { value: 'ensemble', label: 'Ensemble (Combo)' },
+    { value: 'lstm', label: 'LSTM (Deep Learning)' },
     { value: 'logistic_regression', label: 'Logistic Regression' },
   ];
 
@@ -209,8 +213,7 @@ const Dashboard = () => {
           className="text-center space-y-4 py-8"
         >
           <h1 className="text-6xl font-bold tracking-tight">
-            <span className="text-gradient">Stock</span>
-            <span className="text-white">Predict</span>
+            <span className="text-gradient">StockPredict</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto font-light">
             Advanced market analysis powered by machine learning and sentiment analysis

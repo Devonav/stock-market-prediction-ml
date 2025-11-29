@@ -95,7 +95,7 @@ def predict():
     Body: {
         symbol,
         period,
-        model_type,
+        model_type, # Options: xgboost, random_forest, lightgbm, ensemble, lstm
         target_type,
         target_days,
         use_advanced_features

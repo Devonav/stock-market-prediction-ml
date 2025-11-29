@@ -8,7 +8,8 @@ import {
   Zap,
   CheckCircle,
   XCircle,
-  BarChart
+  BarChart,
+  Download
 } from 'lucide-react';
 import { AnimatedCard, MetricCard, PulseCard } from './AnimatedCard';
 import { AnimatedButton } from './AnimatedButton';
@@ -49,6 +50,33 @@ const StockPrediction = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExport = () => {
+    if (!predictionData) return;
+
+    const headers = ['Date', 'Close Price', 'Actual', 'Predicted'];
+    const rows = predictionData.recent_predictions.map(row => [
+      new Date(row.date).toLocaleDateString(),
+      row.close,
+      row.actual,
+      row.predicted
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${symbol}_predictions.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const renderPrediction = () => {
@@ -259,9 +287,18 @@ const StockPrediction = ({
 
           {/* Recent Predictions Table */}
           <AnimatedCard delay={0.5}>
-            <h3 className="text-xl font-bold text-slate-100 mb-4">
-              Recent Predictions (Last 20 Days)
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-slate-100">
+                Recent Predictions (Last 20 Days)
+              </h3>
+              <AnimatedButton
+                onClick={handleExport}
+                icon={Download}
+                className="bg-slate-700 hover:bg-slate-600 text-sm py-1"
+              >
+                Export CSV
+              </AnimatedButton>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

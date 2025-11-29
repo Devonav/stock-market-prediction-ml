@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import Plot from 'react-plotly.js';
-import { TrendingUp, Activity, DollarSign, Target } from 'lucide-react';
+import { TrendingUp, Activity, DollarSign, Target, Download } from 'lucide-react';
 import { AnimatedCard, MetricCard } from './AnimatedCard';
+import { AnimatedButton } from './AnimatedButton';
 
 const PerformanceMetrics = ({ portfolio, history }) => {
     if (!portfolio) return null;
@@ -23,6 +24,34 @@ const PerformanceMetrics = ({ portfolio, history }) => {
         });
         drawdown = values.map((v, i) => ((v - cumMax[i]) / cumMax[i]) * 100);
     }
+
+    const handleExport = () => {
+        if (!history || history.length === 0) return;
+
+        const headers = ['Date', 'Total Value', 'Cash', 'Holdings Value', 'P&L'];
+        const rows = history.map(row => [
+            new Date(row.date).toLocaleDateString(),
+            row.total_value,
+            row.cash,
+            row.holdings_value,
+            row.total_pl
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'portfolio_history.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div className="space-y-6">
@@ -67,7 +96,16 @@ const PerformanceMetrics = ({ portfolio, history }) => {
             {history.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <AnimatedCard delay={0.5}>
-                        <h3 className="text-xl font-bold text-slate-100 mb-4">Portfolio Growth</h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-slate-100">Portfolio Growth</h3>
+                            <AnimatedButton
+                                onClick={handleExport}
+                                icon={Download}
+                                className="bg-slate-700 hover:bg-slate-600 text-sm py-1"
+                            >
+                                Export CSV
+                            </AnimatedButton>
+                        </div>
                         <Plot
                             data={[
                                 {

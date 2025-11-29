@@ -11,6 +11,10 @@ import xgboost as xgb
 import lightgbm as lgb
 import joblib
 import os
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
+from tensorflow.keras.optimizers import Adam
 
 class StockPredictor:
     def __init__(self, model_dir="../models"):
@@ -79,7 +83,7 @@ class StockPredictor:
         Args:
             X_train: Training features
             y_train: Training targets
-            model_type (str): Type of model ('random_forest', 'logistic_regression', 'svm', 'linear_regression', 'xgboost', 'lightgbm', 'ensemble')
+            model_type (str): Type of model ('random_forest', 'logistic_regression', 'svm', 'linear_regression', 'xgboost', 'lightgbm', 'ensemble', 'lstm')
             task_type (str): 'classification' or 'regression'
         """
         self.is_classifier = (task_type == 'classification')
@@ -118,6 +122,9 @@ class StockPredictor:
                     estimators=[('rf', rf), ('xgb', xgb_model), ('lgb', lgb_model)],
                     voting='soft'
                 )
+            elif model_type == 'lstm':
+                self.train_lstm(X_train, y_train, task_type)
+                return # LSTM training is handled separately
             else:
                 raise ValueError(f"Unknown classification model: {model_type}")
 
@@ -153,12 +160,44 @@ class StockPredictor:
                 self.model = VotingRegressor(
                     estimators=[('rf', rf), ('xgb', xgb_model), ('lgb', lgb_model)]
                 )
+            elif model_type == 'lstm':
+                self.train_lstm(X_train, y_train, task_type)
+                return # LSTM training is handled separately
             else:
                 raise ValueError(f"Unknown regression model: {model_type}")
 
         print(f"Training {model_type} model for {task_type}...")
         self.model.fit(X_train, y_train)
         print("Model training completed!")
+
+    def train_lstm(self, X_train, y_train, task_type='classification'):
+        """
+        Train LSTM model
+        """
+        # Reshape input for LSTM [samples, time steps, features]
+        # Since we use lagged features, we can treat each row as a single time step with many features
+        X_train_reshaped = X_train.reshape((X_train.shape[0], 1, X_train.shape[1]))
+        
+        model = Sequential()
+        model.add(Input(shape=(1, X_train.shape[1])))
+        model.add(LSTM(50, return_sequences=True))
+        model.add(Dropout(0.2))
+        model.add(LSTM(50, return_sequences=False))
+        model.add(Dropout(0.2))
+        
+        if task_type == 'classification':
+            model.add(Dense(1, activation='sigmoid'))
+            model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
+        else:
+            model.add(Dense(1))
+            model.compile(optimizer=Adam(learning_rate=0.001), loss='mse', metrics=['mae'])
+            
+        print(f"Training LSTM model for {task_type}...")
+        # Train with early stopping (simulated by low epochs for demo)
+        model.fit(X_train_reshaped, y_train, epochs=10, batch_size=32, verbose=1)
+        
+        self.model = model
+        print("LSTM training completed!")
     
     def evaluate_model(self, X_test, y_test):
         """
@@ -174,7 +213,17 @@ class StockPredictor:
         if self.model is None:
             raise ValueError("Model not trained yet!")
         
-        y_pred = self.model.predict(X_test)
+        # Handle LSTM prediction
+        if isinstance(self.model, Sequential):
+            X_test_reshaped = X_test.reshape((X_test.shape[0], 1, X_test.shape[1]))
+            y_pred = self.model.predict(X_test_reshaped)
+            
+            if self.is_classifier:
+                y_pred = (y_pred > 0.5).astype(int).flatten()
+            else:
+                y_pred = y_pred.flatten()
+        else:
+            y_pred = self.model.predict(X_test)
         
         if self.is_classifier:
             metrics = {
@@ -294,6 +343,14 @@ class StockPredictor:
             raise ValueError("Model not trained or loaded!")
         
         X_scaled = self.scaler.transform(X[self.feature_columns])
+        
+        if isinstance(self.model, Sequential):
+            X_reshaped = X_scaled.reshape((X_scaled.shape[0], 1, X_scaled.shape[1]))
+            pred = self.model.predict(X_reshaped)
+            if self.is_classifier:
+                return (pred > 0.5).astype(int).flatten()
+            return pred.flatten()
+            
         return self.model.predict(X_scaled)
     
     def predict_proba(self, X):
@@ -318,9 +375,9 @@ def compare_models(X_train, X_test, y_train, y_test, task_type='classification',
         dict: Results for each model
     """
     if task_type == 'classification':
-        models = ['random_forest', 'xgboost', 'lightgbm', 'logistic_regression', 'ensemble']
+        models = ['random_forest', 'xgboost', 'lightgbm', 'logistic_regression', 'ensemble', 'lstm']
     else:
-        models = ['random_forest', 'xgboost', 'lightgbm', 'linear_regression', 'ensemble']
+        models = ['random_forest', 'xgboost', 'lightgbm', 'linear_regression', 'ensemble', 'lstm']
 
     results = {}
 
